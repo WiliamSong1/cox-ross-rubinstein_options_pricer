@@ -25,10 +25,6 @@ def pricingRequest(stockPrice, strikePrice, timeToMaturity, marketRate, marketVo
     sUp = stockPrice * uVal
     delta = (vUp - vDown)/(sUp - sDown)
     price = values[0]
-    print(price)
-    print(delta)
-    print(numOfSteps)
-    print(uVal, dVal, vUp, vDown, sUp, sDown)
 pricingRequest(100, 100, 1, 0.05, 0.20, 200)
 
 
