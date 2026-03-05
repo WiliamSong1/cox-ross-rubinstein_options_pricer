@@ -1,6 +1,6 @@
 import numpy as np
 
-def pricingRequest(stockPrice, strikePrice, timeToMaturity, marketRate, marketVol, numOfSteps, optionType = "call"):
+def pricingRequest(stockPrice, strikePrice, timeToMaturity, marketRate, marketVol, numOfSteps, isCall):
     deltaT = timeToMaturity/numOfSteps
     uVal  = np.e**(marketVol*(deltaT**(1/2)))
     dVal  = 1/uVal
@@ -25,7 +25,7 @@ def pricingRequest(stockPrice, strikePrice, timeToMaturity, marketRate, marketVo
     sUp = stockPrice * uVal
     delta = (vUp - vDown)/(sUp - sDown)
     price = values[0]
-pricingRequest(100, 100, 1, 0.05, 0.20, 200)
+pricingRequest(100, 100, 1, 0.05, 0.20, 200, True)
 
 
 
