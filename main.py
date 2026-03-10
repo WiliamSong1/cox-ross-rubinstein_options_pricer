@@ -14,7 +14,10 @@ def pricingRequest(stockPrice, strikePrice, timeToMaturity, marketRate, marketVo
     vDown = 0
     vUp = 0
     for S in prices:
-            values.append(max(S-strikePrice, 0))
+        if optionType == "call":
+            values.append(max(S - strikePrice, 0))
+        elif optionType == "put":
+            values.append(max(strikePrice - S, 0))
     for i in range(numOfSteps -1,-1,-1):
         for j in range(i+1):
             values[j] = discount * (riskNuetralP * values[j+1] + (1-riskNuetralP) * values[j])
