@@ -16,7 +16,7 @@ def pricingRequest(stockPrice, strikePrice, timeToMaturity, marketRate, marketVo
     for S in prices:
         if isCall:
             values.append(max(S - strikePrice, 0))
-        elif !isCall:
+        else:
             values.append(max(strikePrice - S, 0))
     for i in range(numOfSteps -1,-1,-1):
         for j in range(i+1):
