@@ -69,7 +69,7 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/WiliamSong1/cox-ross-rubinstein_options_pricer.git
-cd ox-ross-rubinstein_options_pricer
+cd cox-ross-rubinstein_options_pricer
 ```
 
 Install dependencies:
