@@ -1,1 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Option Pricer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background: #f7f7f7;
+        }
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .full {
+            grid-column: 1 / -1;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .result, .error {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+        }
+        .result {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+        .error {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Binomial Option Pricer</h1>
 
+        <form method="POST">
+            <div>
+                <label for="stockPrice">Stock Price</label>
+                <input type="number" step="any" name="stockPrice" required />
+            </div>
+
+            <div>
+                <label for="strikePrice">Strike Price</label>
+                <input type="number" step="any" name="strikePrice" required />
+            </div>
+
+            <div>
+                <label for="timeToMaturity">Time to Maturity</label>
+                <input type="number" step="any" name="timeToMaturity" required />
+            </div>
+
+            <div>
+                <label for="marketRate">Market Rate</label>
+                <input type="number" step="any" name="marketRate" required />
+            </div>
+
+            <div>
+                <label for="marketVol">Market Volatility</label>
+                <input type="number" step="any" name="marketVol" required />
+            </div>
+
+            <div>
+                <label for="numOfSteps">Number of Steps</label>
+                <input type="number" name="numOfSteps" min="1" required />
+            </div>
+
+            <div class="full">
+                <label for="optionType">Option Type</label>
+                <select name="optionType">
+                    <option value="call">Call</option>
+                    <option value="put">Put</option>
+                </select>
+            </div>
+
+            <div class="full">
+                <button type="submit">Calculate</button>
+            </div>
+        </form>
+
+        {% if result %}
+        <div class="result">
+            <strong>Price:</strong> {{ result.price }}<br />
+            <strong>Delta:</strong> {{ result.delta }}
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
