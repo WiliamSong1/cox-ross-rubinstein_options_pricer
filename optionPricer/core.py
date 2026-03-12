@@ -28,3 +28,4 @@ def pricingRequest(stockPrice, strikePrice, timeToMaturity, marketRate, marketVo
     sUp = stockPrice * uVal
     delta = (vUp - vDown)/(sUp - sDown)
     price = values[0]
+    return price, delta
