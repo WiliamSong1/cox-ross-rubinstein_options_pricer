@@ -1,143 +1,92 @@
-from core import pricingRequest
 import sys
-from PySide6.QtCore import Qt
+import requests
+
 from PySide6.QtWidgets import (
     QApplication,
-    QCheckBox,
-    QComboBox,
-    QFormLayout,
-    QGroupBox,
-    QHBoxLayout,
+    QWidget,
     QLabel,
     QLineEdit,
-    QMainWindow,
-    QMessageBox,
     QPushButton,
+    QComboBox,
+    QFormLayout,
     QVBoxLayout,
-    QWidget,
+    QMessageBox,
 )
 
 
-class BinomialPricerWindow(QMainWindow):
+API_URL = "http://127.0.0.1:5000/api/price"
+
+
+class OptionPricerGUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Binomial Options Pricer")
-        self.resize(460, 420)
+        self.setWindowTitle("Option Pricer GUI")
+        self.resize(420, 350)
 
-        central = QWidget()
-        self.setCentralWidget(central)
-
-        main_layout = QVBoxLayout(central)
-
-        input_group = QGroupBox("Inputs")
-        form = QFormLayout()
-        input_group.setLayout(form)
-
-        self.stock_input = QLineEdit("100")
-        self.strike_input = QLineEdit("100")
-        self.maturity_input = QLineEdit("1")
-        self.rate_input = QLineEdit("0.05")
-        self.vol_input = QLineEdit("0.2")
-        self.steps_input = QLineEdit("100")
+        self.stock_price = QLineEdit()
+        self.strike_price = QLineEdit()
+        self.time_to_maturity = QLineEdit()
+        self.market_rate = QLineEdit()
+        self.market_vol = QLineEdit()
+        self.num_steps = QLineEdit()
 
         self.option_type = QComboBox()
         self.option_type.addItems(["Call", "Put"])
 
-        form.addRow("Stock Price:", self.stock_input)
-        form.addRow("Strike Price:", self.strike_input)
-        form.addRow("Time to Maturity (years):", self.maturity_input)
-        form.addRow("Market Rate:", self.rate_input)
-        form.addRow("Market Volatility:", self.vol_input)
-        form.addRow("Number of Steps:", self.steps_input)
+        self.price_label = QLabel("Price: ")
+        self.delta_label = QLabel("Delta: ")
+
+        self.calculate_button = QPushButton("Calculate")
+        self.calculate_button.clicked.connect(self.calculate_price)
+
+        form = QFormLayout()
+        form.addRow("Stock Price:", self.stock_price)
+        form.addRow("Strike Price:", self.strike_price)
+        form.addRow("Time to Maturity:", self.time_to_maturity)
+        form.addRow("Market Rate:", self.market_rate)
+        form.addRow("Market Volatility:", self.market_vol)
+        form.addRow("Number of Steps:", self.num_steps)
         form.addRow("Option Type:", self.option_type)
 
-        main_layout.addWidget(input_group)
+        layout = QVBoxLayout()
+        layout.addLayout(form)
+        layout.addWidget(self.calculate_button)
+        layout.addWidget(self.price_label)
+        layout.addWidget(self.delta_label)
 
-        button_layout = QHBoxLayout()
-        self.price_button = QPushButton("Price Option")
-        self.clear_button = QPushButton("Clear")
-        button_layout.addWidget(self.price_button)
-        button_layout.addWidget(self.clear_button)
-        main_layout.addLayout(button_layout)
-
-        result_group = QGroupBox("Results")
-        result_layout = QFormLayout()
-        result_group.setLayout(result_layout)
-
-        self.price_label = QLabel("-")
-        self.delta_label = QLabel("-")
-        self.status_label = QLabel("Ready")
-        self.status_label.setWordWrap(True)
-
-        result_layout.addRow("Option Price:", self.price_label)
-        result_layout.addRow("Delta:", self.delta_label)
-        result_layout.addRow("Status:", self.status_label)
-
-        main_layout.addWidget(result_group)
-        main_layout.addStretch()
-
-        self.price_button.clicked.connect(self.calculate_price)
-        self.clear_button.clicked.connect(self.clear_results)
+        self.setLayout(layout)
 
     def calculate_price(self):
         try:
-            stock_price = float(self.stock_input.text())
-            strike_price = float(self.strike_input.text())
-            time_to_maturity = float(self.maturity_input.text())
-            market_rate = float(self.rate_input.text())
-            market_vol = float(self.vol_input.text())
-            num_steps = int(self.steps_input.text())
-            is_call = self.option_type.currentText() == "Call"
+            payload = {
+                "stockPrice": float(self.stock_price.text()),
+                "strikePrice": float(self.strike_price.text()),
+                "timeToMaturity": float(self.time_to_maturity.text()),
+                "marketRate": float(self.market_rate.text()),
+                "marketVol": float(self.market_vol.text()),
+                "numOfSteps": int(self.num_steps.text()),
+                "isCall": self.option_type.currentText() == "Call",
+            }
 
-            if num_steps <= 0:
-                raise ValueError("Number of steps must be greater than 0.")
-            if time_to_maturity <= 0:
-                raise ValueError("Time to maturity must be greater than 0.")
-            if stock_price <= 0 or strike_price <= 0:
-                raise ValueError("Stock price and strike price must be greater than 0.")
-            if market_vol < 0:
-                raise ValueError("Market volatility cannot be negative.")
+            response = requests.post(API_URL, json=payload, timeout=10)
 
-            result = pricingRequest(
-                stock_price,
-                strike_price,
-                time_to_maturity,
-                market_rate,
-                market_vol,
-                num_steps,
-                is_call,
-            )
+            if response.status_code != 200:
+                try:
+                    error_msg = response.json().get("error", "Unknown error")
+                except Exception:
+                    error_msg = response.text
+                raise ValueError(error_msg)
 
-            
-            if isinstance(result, tuple) and len(result) >= 2:
-                price, delta = result[0], result[1]
-                self.price_label.setText(f"{price:.6f}")
-                self.delta_label.setText(f"{delta:.6f}")
-                self.status_label.setText("Success")
-            elif isinstance(result, (int, float)):
-                self.price_label.setText(f"{float(result):.6f}")
-                self.delta_label.setText("Not returned by function")
-                self.status_label.setText("Success")
-            else:
-                self.price_label.setText("-")
-                self.delta_label.setText("-")
-                self.status_label.setText(
-                    "The pricing function ran, but it did not return a value. "
-                    "Add `return price, delta` at the end of pricingRequest."
-                )
+            data = response.json()
+            self.price_label.setText(f"Price: {data['price']}")
+            self.delta_label.setText(f"Delta: {data['delta']}")
 
-        except Exception as exc:
-            QMessageBox.critical(self, "Input Error", str(exc))
-            self.status_label.setText("Error")
-
-    def clear_results(self):
-        self.price_label.setText("-")
-        self.delta_label.setText("-")
-        self.status_label.setText("Ready")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = BinomialPricerWindow()
+    window = OptionPricerGUI()
     window.show()
     sys.exit(app.exec())
